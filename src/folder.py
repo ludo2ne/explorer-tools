@@ -8,6 +8,7 @@ class Folder:
         self.path = path
         self.name = os.path.basename(path)
         self.size = self.total_size()
+        self.creation_date = os.path.getctime(path)
 
     def exists(self):
         """Checks if the folder exists
@@ -72,9 +73,12 @@ class Folder:
                        colalign=("left", "right", "right", "left", "left", "left")))
 
     def compare(self, path2):
+        """Compare content with another folder
+        """
         # Get files attributes for both directories
-        path1_attributes = self.get_files_attributes(self.path)
-        path2_attributes = self.get_files_attributes(path2)
+        path1_attributes = self.get_files_attributes()
+        dir2 = Folder(path2)
+        path2_attributes = dir2.get_files_attributes()
 
         # Find common and different files
         common_files = set([f[0] for f in path1_attributes]) & set(
@@ -84,13 +88,8 @@ class Folder:
         path2_only_files = [(f[0], f[1], f[2], f[3])
                             for f in path2_attributes if f[0] not in common_files]
 
-        # Print results
-        print("Compare :")
-        print("  " + self.path)
-        print("  " + path2)
-        print("\n")
-        print(f"Number of common files: {len(common_files)}")
-        print("\n")
+        print(f"Number of common files: {len(common_files)} \n")
+
         if path1_only_files:
             print(
                 f"Files in {self.path} but not in {path2}: {len(path1_only_files)}")
@@ -100,6 +99,7 @@ class Folder:
         else:
             print(f"No files in {self.path} but not in {path2}")
             print("\n")
+
         if path2_only_files:
             print(
                 f"Files in {path2} but not in {self.path}: {len(path2_only_files)}")
@@ -120,11 +120,13 @@ class Folder:
             size_bytes /= 1024.0
         return f"{size_bytes:.1f} PB"
 
-    def get_files_attributes(self, path):
-        files = os.listdir(path)
+    def get_files_attributes(self):
+        """List files with some attributes
+        """
+        files = os.listdir(self.path)
         files_attributes = []
         for file in files:
-            file_path = os.path.join(path, file)
+            file_path = os.path.join(self.path, file)
             isfolder = os.path.isdir(file_path)
             size = os.path.getsize(file_path)
             created = os.path.getctime(file_path)
