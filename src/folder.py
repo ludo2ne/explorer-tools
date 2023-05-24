@@ -1,6 +1,6 @@
 import os
 from tabulate import tabulate
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class Folder:
@@ -134,3 +134,37 @@ class Folder:
                 created).strftime('%Y-%m-%d %H:%M:%S')
             files_attributes.append((file, isfolder, size, created_date))
         return files_attributes
+
+
+    def display_large_old_files(self, nb_years = 5, size_mo = 0.5):
+        """
+        Lists files 
+            larger than size_mo 
+            not modified in the last nb_years years.
+        """
+        file_info = []
+
+        for root, dirs, files in os.walk(self.path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                size = os.path.getsize(file_path)
+                modified_time = os.path.getmtime(file_path)
+                modified_date = datetime.fromtimestamp(modified_time)
+
+                if size > size_mo * 1024 * 1024  and (modified_date < datetime.now() - timedelta(days=365*nb_years)):
+                    file_info.append([file, 
+                                      os.path.dirname(os.path.relpath(file_path, self.path)), 
+                                      size,
+                                      datetime.fromtimestamp(modified_time).strftime('%Y-%m-%d %H:%M:%S')])
+
+        if file_info:
+            headers = ['File Name', 'SubFolder', 'Size', 'Modified Date']
+            sorted_file_info = sorted(file_info, key=lambda x: x[2], reverse=True)
+            formatted_file_info = [[row[0], row[1], self.format_size(row[2]), row[3]] for row in sorted_file_info]
+            print(tabulate(formatted_file_info, 
+                           headers=headers, 
+                           tablefmt="psql",
+                           colalign=("left", "left", "right", "right")))
+        else:
+            print("No large old files found")
+        print("\n")
