@@ -150,6 +150,8 @@ class MusicFiles:
                         print(f"Error processing file: {file_name} - {e}")
 
 
-new_music = MusicFiles('/home/ludovic/temp')
-new_music.class_in_folders()
-new_music.export_details_to_csv()
+if __name__ == "__main__":
+
+    new_music = MusicFiles('P:\Ludo\Privé\Zik new')
+    new_music.class_in_folders()
+    new_music.export_details_to_csv()
