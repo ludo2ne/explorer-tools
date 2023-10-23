@@ -2,6 +2,7 @@ import os
 import shutil
 import csv
 import datetime
+import random
 
 from mutagen.easyid3 import EasyID3
 from mutagen.mp3 import MP3
@@ -149,9 +150,50 @@ class MusicFiles:
                     except Exception as e:
                         print(f"Error processing file: {file_name} - {e}")
 
+    def sample_and_copy_mp3_files(self, sample_size, destination_folder=None):
+
+        if not destination_folder:
+            destination_folder = os.path.join(self.path, "sample")
+
+        if not os.path.exists(destination_folder):
+            os.makedirs(destination_folder)
+
+        # Get a list of all MP3 files in the source folder
+        mp3_files = [file for file in os.listdir(self.path) if file.endswith(".mp3")]
+
+        # Check if there are enough MP3 files for sampling
+        if len(mp3_files) < sample_size:
+            print("Not enough MP3 files for the requested sample size.")
+            return
+
+        # Randomly sample 'sample_size' files
+        selected_files = random.sample(mp3_files, sample_size)
+
+        # Copy selected files to the destination folder
+        for file in selected_files:
+            source_path = os.path.join(self.path, file)
+            destination_path = os.path.join(destination_folder, file)
+            shutil.copy2(source_path, destination_path)
+
+        print(f"{sample_size} MP3 files copied to the destination folder.")
+
 
 if __name__ == "__main__":
 
-    new_music = MusicFiles('P:\Ludo\Privé\Zik new')
-    new_music.class_in_folders()
-    new_music.export_details_to_csv()
+    # new_music = MusicFiles('C:\Users\ldeneuville\Ludo-pc-pro\Perso\zik\Zik new')
+    # new_music.class_in_folders()
+    # new_music.export_details_to_csv()
+
+    dic_folders ={
+        "C:/Users/ldeneuville/Ludo-pc-pro/Perso/zik": 20,
+        "C:/Users/ldeneuville/Ludo-pc-pro/Perso/zik/2010 - 2019" : 20,
+        "C:/Users/ldeneuville/Ludo-pc-pro/Perso/zik/2000 - 2009" : 20,
+        "C:/Users/ldeneuville/Ludo-pc-pro/Perso/zik/1990 - 1999" : 20,
+        "C:/Users/ldeneuville/Ludo-pc-pro/Perso/zik/1989 et avant" : 20
+    }
+    for key, value in dic_folders.items():
+        fts = MusicFiles(key)
+        fts.sample_and_copy_mp3_files(value, "C:/Users/ldeneuville/Ludo-pc-pro/Temp/mp3")
+        
+
+    
